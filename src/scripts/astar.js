@@ -33,8 +33,8 @@ define(['./ds'], function(ds){
 		return pos1.row==pos2.row && pos1.column == pos2.column;
 	}
 
-	function reconstructPath(cameFrom, current){
-		var stringPos = stringifyPosition(current);
+	function reconstructPath(cameFrom, current){		
+		var stringPos = current;
 		if(cameFrom[stringPos]){
 			paths = reconstructPath(cameFrom, cameFrom[stringPos])
 			return paths + ";" + stringPos;
@@ -43,6 +43,8 @@ define(['./ds'], function(ds){
 			return stringPos;
 		}
 	}
+
+
 
 	function astar(grid,start,end,heuristic){
 		var closedHash = {};
@@ -59,31 +61,33 @@ define(['./ds'], function(ds){
 		openSet.enqueue(stringPos, fScore[stringPos]);
 		openHash[stringPos]=true;
 
-		while(openSet.size()>0){
+		while(openSet.size() > 0){
 			stringPos = openSet.dequeue().item;
 			var current = convertToPosition(stringPos);
 			openHash[stringPos] = false;
 
 			if(samePosition(current, end))
-				return reconstructPath(cameFrom,current);
+				return reconstructPath(cameFrom,stringPos);
 
 			closedHash[stringPos]=true;
 
-			var positions = getPossiblePositions(grid, current);			
+
+			var positions = getPossiblePositions(grid, current);	
 			for(var i=0; i<positions.length; i++){
 				var newPos = positions[i];
 				var newStringPos = stringifyPosition(newPos);
-
 				newGScore = gScore[stringPos] + 1;
 
 				if(closedHash[newStringPos] && newGScore >= gScore[newStringPos])
 					continue;
+				
 
-				if(! openHash[newStringPos] || (closedHash[newStringPos] &&  newGScore < gScore[newStringPos]))
+				if(! openHash[newStringPos] || newGScore < gScore[newStringPos])
 				{
 					cameFrom[newStringPos] = stringPos;
 					gScore[newStringPos] = newGScore;
 					fScore[newStringPos]= newGScore + heuristic(newPos, end);
+
 					if(! openHash[newStringPos])
 					{
 						openSet.enqueue(newStringPos, fScore[newStringPos]);
